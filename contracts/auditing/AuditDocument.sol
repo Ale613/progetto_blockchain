@@ -1,1 +1,89 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
 
+/** @title IRegisterDocument
+*   @notice Interface for an external contract
+*/
+interface IRegisterDocument{
+
+    function getDocument(bytes32 docHash) external view returns (address submitter, bytes32 dHash, uint256 timestamp,bool exists);
+}
+
+
+/** @title AuditDocument
+*   @notice A simplified contract that implement a method to audit a document for the PA
+*   @dev Implements the audit of a document
+*/
+contract AuditDocument{
+
+    struct Audit{
+
+        bytes32 docHash;
+        bytes32 auditHash;
+        address auditor;
+        uint256 timestamp;
+        bool isDocValid;
+    }
+    
+    mapping(bytes32 => Audit) public audits;
+    mapping(bytes32 => bytes32[]) private auditsByDoc;
+
+
+    address public constant REGISTER_DOCUMENT_CONTRACT = 0x8016619281F888d011c84d2E2a5348d9417c775B;
+    IRegisterDocument RegisterDocumentContract = IRegisterDocument(REGISTER_DOCUMENT_CONTRACT);
+
+    event AuditCreated(
+        bytes32 indexed docHash,
+        bytes32 indexed auditHash,
+        address indexed auditor,
+        uint256 timestamp,
+        bool  isDocValid
+    );
+
+    function createAudit(bytes32 _docHash) external {
+
+        (, bytes32 tempDocHash, ,) = RegisterDocumentContract.getDocument(_docHash);
+
+        bool _isDocValid = (tempDocHash == _docHash);
+
+        bytes32 _auditHash = keccak256(
+            abi.encodePacked(_docHash, msg.sender, block.timestamp, _isDocValid)
+        );
+
+        audits[_auditHash] = Audit({
+            docHash: _docHash,
+            auditor: msg.sender,
+            timestamp: block.timestamp,
+            isDocValid: _isDocValid,
+            auditHash: _auditHash
+        });
+
+        auditsByDoc[_docHash].push(_auditHash);
+
+        emit AuditCreated(
+            _docHash,
+            _auditHash,
+            audits[_auditHash].auditor,
+            audits[_auditHash].timestamp,
+            audits[_auditHash].isDocValid
+            ); 
+    }
+
+    /** @notice Return all audits for a given document */
+    function getAuditsByDoc(bytes32 _docHash) external view returns (Audit[] memory) {
+        
+        bytes32[] storage hashes = auditsByDoc[_docHash];
+        Audit[] memory result = new Audit[](hashes.length);
+
+        for (uint256 i = 0; i < hashes.length; i++) {
+            result[i] = audits[hashes[i]];
+        }
+
+        return result;    }
+
+    /** @notice Return a single audit by auditHash */
+    function getAudit(bytes32 _auditHash) external view returns (Audit memory){
+        return audits[_auditHash];
+    }
+
+}
