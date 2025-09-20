@@ -37,7 +37,7 @@ contract AuditDocument{
     mapping(address => bool) public authorizedAuditors;
 
     // !!! THE ADDRESS IS ONLY AN EXAMPLE
-    address public constant REGISTER_DOCUMENT_CONTRACT = 0x8016619281F888d011c84d2E2a5348d9417c775B;
+    address public constant REGISTER_DOCUMENT_CONTRACT = 0xd9145CCE52D386f254917e481eB44e9943F39138;
     IRegisterDocument RegisterDocumentContract = IRegisterDocument(REGISTER_DOCUMENT_CONTRACT);
 
     event AuditCreated(
