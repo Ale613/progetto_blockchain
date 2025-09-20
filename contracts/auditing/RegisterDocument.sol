@@ -57,12 +57,13 @@ contract RegisterDocument{
     }
 
     function addAuthorized(address _address) external onlyOwner {
+        require(authorized[_address] == false , "Address is already authorized!");
         authorized[_address] = true;
         emit AuthorizedAdded(_address);
     }
 
-    // Remove an authorized account
     function removeAuthorized(address _address) external onlyOwner {
+        require(authorized[_address] == true, "Address is already not authorized!");
         authorized[_address] = false;
         emit AuthorizedRemoved(_address);
     }
