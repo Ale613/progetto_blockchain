@@ -16,6 +16,13 @@ interface IRegisterDocument{
 */
 contract AuditDocument{
 
+    address public owner;
+
+    // Deployer become owner
+    constructor() {
+        owner = msg.sender;
+    }
+
     struct Audit{
 
         bytes32 docHash;
@@ -27,8 +34,9 @@ contract AuditDocument{
     
     mapping(bytes32 => Audit) public audits;
     mapping(bytes32 => bytes32[]) private auditsByDoc;
+    mapping(address => bool) public authorizedAuditors;
 
-
+    // !!! THE ADDRESS IS ONLY AN EXAMPLE
     address public constant REGISTER_DOCUMENT_CONTRACT = 0x8016619281F888d011c84d2E2a5348d9417c775B;
     IRegisterDocument RegisterDocumentContract = IRegisterDocument(REGISTER_DOCUMENT_CONTRACT);
 
@@ -39,8 +47,31 @@ contract AuditDocument{
         uint256 timestamp,
         bool  isDocValid
     );
+    event AuditorAuthorized(address indexed auditor);
+    event AuditorRevoked(address indexed auditor);
 
-    function createAudit(bytes32 _docHash) external {
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not the contract owner");
+        _;
+    }
+
+    modifier onlyAuditor() {
+        require(authorizedAuditors[msg.sender], "Not an authorized auditor");
+        _;
+    }
+
+    function authorizeAuditor(address _auditor) external onlyOwner {
+        authorizedAuditors[_auditor] = true;
+        emit AuditorAuthorized(_auditor);
+    }
+
+    function revokeAuditor(address _auditor) external onlyOwner {
+        authorizedAuditors[_auditor] = false;
+        emit AuditorRevoked(_auditor);
+    }
+
+    /** @notice Create an audit by an authorized auditor */
+    function createAudit(bytes32 _docHash) external onlyAuditor{
 
         (, bytes32 tempDocHash, ,) = RegisterDocumentContract.getDocument(_docHash);
 

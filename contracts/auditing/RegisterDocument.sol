@@ -8,6 +8,8 @@ pragma solidity ^0.8.19;
 */
 contract RegisterDocument{
 
+    address public owner;
+
     struct Document {
         address submitter;      // who registered the contract
         bytes32 docHash;        // hash of the document
@@ -16,12 +18,31 @@ contract RegisterDocument{
     }
 
     mapping(bytes32 => Document) public documents;
+    mapping(address => bool) public authorized;
+
 
     // event when a document is registered
     event DocumentRegistered(bytes32 indexed docHash, address indexed registrant, uint256 indexed timestamp);
+    event AuthorizedAdded(address indexed _address);
+    event AuthorizedRemoved(address indexed _address);
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not the owner!");
+        _;
+    }
+
+    modifier onlyAuthorized() {
+        require(authorized[msg.sender], "Not authorized!");
+        _;
+    }
+
+    constructor() {
+        owner = msg.sender;
+        authorized[owner] = true;
+    }
 
     /** @notice Function that register a new document */
-    function registerDocument(bytes32 docHash) external {
+    function registerDocument(bytes32 docHash) external onlyAuthorized{
 
         require(!isRegistered(docHash), "Document already registered!");
 
@@ -33,6 +54,17 @@ contract RegisterDocument{
         });
 
         emit DocumentRegistered(docHash, documents[docHash].submitter, documents[docHash].timestamp);
+    }
+
+    function addAuthorized(address _address) external onlyOwner {
+        authorized[_address] = true;
+        emit AuthorizedAdded(_address);
+    }
+
+    // Remove an authorized account
+    function removeAuthorized(address _address) external onlyOwner {
+        authorized[_address] = false;
+        emit AuthorizedRemoved(_address);
     }
 
     // Check if a document is already registered
