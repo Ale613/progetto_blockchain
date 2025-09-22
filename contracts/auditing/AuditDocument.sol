@@ -37,7 +37,7 @@ contract AuditDocument{
     mapping(address => bool) public authorizedAuditors;
 
     // !!! THE ADDRESS IS ONLY AN EXAMPLE
-    address public constant REGISTER_DOCUMENT_CONTRACT = 0xd9145CCE52D386f254917e481eB44e9943F39138;
+    address public constant REGISTER_DOCUMENT_CONTRACT = 0x9d83e140330758a8fFD07F8Bd73e86ebcA8a5692;
     IRegisterDocument RegisterDocumentContract = IRegisterDocument(REGISTER_DOCUMENT_CONTRACT);
 
     event AuditCreated(
@@ -61,11 +61,13 @@ contract AuditDocument{
     }
 
     function authorizeAuditor(address _auditor) external onlyOwner {
+        require(!authorizedAuditors[_auditor], "Auditor already authorized!");
         authorizedAuditors[_auditor] = true;
         emit AuditorAuthorized(_auditor);
     }
 
     function revokeAuditor(address _auditor) external onlyOwner {
+        require(authorizedAuditors[_auditor], "Auditor is not authorized!");
         authorizedAuditors[_auditor] = false;
         emit AuditorRevoked(_auditor);
     }
@@ -103,6 +105,8 @@ contract AuditDocument{
     /** @notice Return all audits for a given document */
     function getAuditsByDoc(bytes32 _docHash) external view returns (Audit[] memory) {
         
+        require(auditsByDoc[_docHash].length > 0, "No audits found for this document!");
+
         bytes32[] storage hashes = auditsByDoc[_docHash];
         Audit[] memory result = new Audit[](hashes.length);
 
@@ -114,6 +118,8 @@ contract AuditDocument{
 
     /** @notice Return a single audit by auditHash */
     function getAudit(bytes32 _auditHash) external view returns (Audit memory){
+            
+        require(audits[_auditHash].timestamp > 0, "Audit does not exist!");
         return audits[_auditHash];
     }
 
