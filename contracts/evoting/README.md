@@ -1,6 +1,6 @@
 # EVoting
 
-Il contratto **EVtoting** permette a un amministratore di creare elezioni, registrare candidati ed elettori, e contare i voti in modo trasparente e sicuro.
+Il contratto **EVoting** permette a un amministratore di creare elezioni, registrare candidati ed elettori, e contare i voti in modo trasparente e sicuro.
 
 ## Funzionalità
 
