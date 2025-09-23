@@ -1,4 +1,4 @@
-# Auditing
+# DecisionMaking
 
 Il contratto di **Decision Making** permette un processo di votazione di una proposta in maniera sicura e trasparente.
 
