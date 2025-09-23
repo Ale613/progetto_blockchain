@@ -1,6 +1,6 @@
 # Auditing
 
-I contratt di **Auditing** permettono di registrare un documento on-chain e peformare degli audit su di esso.
+I contratti di **Auditing** permettono di registrare dei documenti on-chain e peformare degli audit su di essi.
 
 ## Contratto RegisterDocument
 
